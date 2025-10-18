@@ -6,12 +6,15 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "docling>=2.55.1",
+    "edgartools>=4.20.1",
     "groq>=0.32.0",
+    "hdbscan>=0.8.40",
     "langextract>=1.0.9",
     "nltk>=3.9.1",
     "numpy>=2.3.3",
     "openai>=1.109.1",
     "pydantic>=2.11.9",
+    "python-dotenv>=1.1.1",
     "qdrant-client[fastembed]>=1.15.1",
     "rank-bm25>=0.2.2",
     "scikit-learn>=1.7.2",
