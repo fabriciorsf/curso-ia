@@ -21,9 +21,9 @@ chunks = list(chunker.chunk(document))
 len(chunks)
 
 for i, chunk in enumerate(chunks):
-    print(f"==={i}===\n")
+    print(f"==={i}===")
     txt_tokens = tokenizer.count_tokens(chunk.text)
-    print(f"chunk.text ({txt_tokens} tokens):\n{chunk.text!r}")
+    print(f"chunk.text ({txt_tokens} tokens):\n{chunk.text!r}\n")
 
 print(chunks[4].meta.doc_items[0].prov[0].page_no)
 print(chunks[4].meta.headings)

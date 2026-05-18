@@ -30,6 +30,11 @@ chunks = list(chunker.chunk(document))
 paper_title = "N/A"
 paper_url = "N/A"
 
+"""O documento já alimentado com as extrações de metadados no script
+5-metadata.py, então aqui só precisamos ler as extrações para obter o título e
+a url do paper. Se não tivéssemos alimentado as extrações, teríamos que rodar
+o script 5-metadata.py antes de rodar esse script para garantir que as
+extrações estejam disponíveis no arquivo docling_paper_metadata.jsonl."""
 with open("./test_output/docling_paper_metadata.jsonl", "r") as f:
     for line in f:
         doc = json.loads(line)
@@ -47,6 +52,7 @@ metadata_document_info = {
     "title": paper_title,
     "url": paper_url,
 }
+metadata_document_info
 
 qdrant = QdrantClient(path="db/data")
 qdrant.create_collection(
@@ -81,6 +87,10 @@ result = qdrant.query_points(
     ),
 ).points
 
+result[0]
+result[0].id
+result[0].score
 result[0].payload
 result[0].payload["text"]
+result[0].payload["metadata"]["title"]
 result[0].payload["metadata"]["url"]

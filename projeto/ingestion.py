@@ -2,7 +2,11 @@ import os
 import uuid
 
 from dotenv import load_dotenv
-from fastembed import TextEmbedding, SparseTextEmbedding, LateInteractionTextEmbedding
+from fastembed import (
+    TextEmbedding,
+    SparseTextEmbedding,
+    LateInteractionTextEmbedding,
+)
 from qdrant_client import QdrantClient, models
 from utils.semantic_chunker import SemanticChunker
 from utils.edgar_client import EdgarClient
@@ -61,4 +65,8 @@ for chunk_data in all_chunks:
     )
     points.append(point)
 
-qdrant.upload_points(collection_name=COLLECTION_NAME, points=points, batch_size=5)
+qdrant.upload_points(
+    collection_name=COLLECTION_NAME,
+    points=points,
+    batch_size=5,
+)

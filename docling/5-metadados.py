@@ -45,11 +45,14 @@ examples = [
     )
 ]
 
+""" Precisa obter uma API key na OpenIA,
+e configura-la na variável de ambiente
+OPENAI_API_KEY para usar o modelo GPT-5.4-mini """
 extraction_result = lx.extract(
     text_or_documents=first_pages,
     prompt_description=prompt,
     examples=examples,
-    model_id="gpt-4o-mini",
+    model_id="gpt-5.4-mini",
 )
 
 lx.io.save_annotated_documents(

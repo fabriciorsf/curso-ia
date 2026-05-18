@@ -4,17 +4,28 @@ from qdrant_client.http.models import Distance, PointStruct, VectorParams
 from sentence_transformers import SentenceTransformer
 
 documents = [
-    "Machine learning é um campo da inteligência artificial que permite que computadores aprendam padrões a partir de dados.",
-    "O aprendizado de máquina dá aos sistemas a capacidade de melhorar seu desempenho sem serem explicitamente programados.",
-    "Em vez de seguir apenas regras fixas, o machine learning descobre relações escondidas nos dados.",
-    "Esse campo combina estatística, algoritmos e poder computacional para extrair conhecimento.",
-    "O objetivo é criar modelos capazes de generalizar além dos exemplos vistos no treinamento.",
-    "Aplicações de machine learning vão desde recomendações de filmes até diagnósticos médicos.",
-    "Os algoritmos de aprendizado de máquina transformam dados brutos em previsões úteis.",
-    "Diferente de um software tradicional, o ML adapta-se conforme novos dados chegam.",
-    "O aprendizado pode ser supervisionado, não supervisionado ou por reforço, dependendo do tipo de problema.",
-    "Na prática, machine learning é o motor que impulsiona muitos avanços em visão computacional e processamento de linguagem natural.",
-    "Mais do que encontrar padrões, o machine learning ajuda a tomar decisões baseadas em evidências.",
+    "Machine learning é um campo da inteligência artificial que permite que "
+    + "computadores aprendam padrões a partir de dados.",
+    "O aprendizado de máquina dá aos sistemas a capacidade de melhorar seu "
+    + "desempenho sem serem explicitamente programados.",
+    "Em vez de seguir apenas regras fixas, o machine learning descobre "
+    + "relações escondidas nos dados.",
+    "Esse campo combina estatística, algoritmos e poder computacional para "
+    + "extrair conhecimento.",
+    "O objetivo é criar modelos capazes de generalizar além dos exemplos "
+    + "vistos no treinamento.",
+    "Aplicações de machine learning vão desde recomendações de filmes até "
+    + "diagnósticos médicos.",
+    "Os algoritmos de aprendizado de máquina transformam dados brutos em "
+    + "previsões úteis.",
+    "Diferente de um software tradicional, o ML adapta-se conforme novos "
+    + "dados chegam.",
+    "O aprendizado pode ser supervisionado, não supervisionado ou por "
+    + "reforço, dependendo do tipo de problema.",
+    "Na prática, machine learning é o motor que impulsiona muitos avanços em "
+    + "visão computacional e processamento de linguagem natural.",
+    "Mais do que encontrar padrões, o machine learning ajuda a tomar decisões "
+    + "baseadas em evidências.",
 ]
 
 client = Groq()
@@ -22,19 +33,45 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 # qdrant = QdrantClient(":memory:")
 qdrant = QdrantClient(path="db/data")
 
-vector_size = model.get_sentence_embedding_dimension()
+vector_size = model.get_embedding_dimension()
 
-qdrant.create_collection(
-    collection_name="ml_documents",
-    vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
-)
 
-points = []
-for idx, doc in enumerate(documents):
-    embedding = model.encode(doc).tolist()
-    points.append(PointStruct(id=idx, vector=embedding, payload={"text": doc}))
+def make_index(
+    collection_name,
+    vector_db,
+    modelSentTransf,
+    vector_size,
+    docs=None,
+):
+    vector_db.create_collection(
+        collection_name="ml_documents",
+        vectors_config=VectorParams(
+            size=vector_size,
+            distance=Distance.COSINE,
+        ),
+    )
 
-qdrant.upsert(collection_name="ml_documents", points=points, wait=True)
+    if docs is not None:
+        add_to_index(collection_name, vector_db, modelSentTransf, docs)
+
+    return vector_db
+
+
+def add_to_index(collection_name, vector_db, modelSentTransf, docs=None):
+    points = []
+    for idx, doc in enumerate(docs):
+        embedding = modelSentTransf.encode(doc).tolist()
+        points.append(
+            PointStruct(
+                id=idx,
+                vector=embedding,
+                payload={"text": doc},
+            )
+        )
+
+    vector_db.upsert(collection_name=collection_name, points=points, wait=True)
+
+    return vector_db
 
 
 def retrieve(query, top_k=3):
@@ -57,9 +94,13 @@ def generate_answer(query, retrieve_docs):
         messages=[
             {
                 "role": "system",
-                "content": "Você é um especialista em machine learning. Use apenas o contexto fornecido para responder as perguntas.",
+                "content": "Você é um especialista em machine learning. Use "
+                + "            apenas o contexto fornecido para responder as perguntas.",
             },
-            {"role": "user", "content": f"Contexto:\n{context}\n\nPergunta: {query}"},
+            {
+                "role": "user",
+                "content": f"Contexto:\n{context}\n\nPergunta: {query}",
+            },
         ],
         temperature=0,
     )
@@ -72,6 +113,10 @@ def rag(query, top_k=3):
     answer = generate_answer(query, retrieved)
     return answer, retrieved
 
+
+make_index("ml_documents", qdrant, model, vector_size)
+
+add_to_index("ml_documents", qdrant, model, documents)
 
 answer, docs = rag("O que é machine learning?")
 print(answer)

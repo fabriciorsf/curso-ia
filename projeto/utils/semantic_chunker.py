@@ -9,6 +9,17 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 class SemanticChunker:
+    """Cria chunks semânticos usando HDBSCAN para agrupar parágrafos
+    semelhantes.
+    Parâmetros:
+        - model_name (str): modelo de embedding para gerar representações
+            semânticas.
+        - min_cluster_size (int): tamanho mínimo para formar um cluster.
+        - orphan_cluster_size (int): tamanho mínimo para formar clusters de
+            "órfãos".
+        - max_tokens (int): número máximo de tokens por chunk.
+    """
+
     def __init__(
         self,
         model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
@@ -61,6 +72,8 @@ class SemanticChunker:
 
         return chunks, orphans
 
+    """ Cria chunks semânticos a partir do conteúdo de texto fornecido. """
+
     def create_chunks(self, text_content: str):
         paragraphs = [
             p.strip() for p in text_content.split("\n") if len(p.strip().split()) > 10
@@ -72,12 +85,16 @@ class SemanticChunker:
             paragraphs, self.min_cluster_size
         )
 
+        print(f"#1 Chuncking: {len(final_chunks)} chuncks, {len(orphans)} órfãos.")
         if len(orphans) > 1:
             orphan_chunks, single_orphans = self._cluster_and_process(
                 orphans, self.orphan_cluster_size
             )
             final_chunks.extend(orphan_chunks)
             final_chunks.extend(single_orphans)
+            print(
+                f"#2 Chuncking: {len(orphan_chunks)} chuncks, {len(single_orphans)} órfãos."
+            )
         elif orphans:
             final_chunks.extend(orphans)
 
