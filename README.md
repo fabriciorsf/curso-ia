@@ -28,7 +28,15 @@ uv self update
 
 ### Ativação do ambiente
 
+- Linux:
+
 ```bash
+source .venv/Scripts/activate
+```
+
+- Windows (PowerShell):
+
+```powershell
 .venv\Scripts\activate
 ```
 
